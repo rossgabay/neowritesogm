@@ -36,13 +36,13 @@ public class App {
         Session session = sessionFactory.openSession();
 
         DateTime dtStart = new DateTime();
-        log.info("Start Time : "+  dtStart.toString());
+        log.info("Start Time : {}",  dtStart.toString());
 
         nodes.parallelStream().forEach(session::save);
 
         DateTime dtEnd = new DateTime();
-        log.info("End Time : "+ dtEnd);
-        log.info("Duration : "+ new Period(dtStart, dtEnd));
+        log.info("End Time : {}", dtEnd);
+        log.info("Duration : {}", new Period(dtStart, dtEnd));
 
     }
 }
