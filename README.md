@@ -7,5 +7,5 @@
 
 ##to run:
  - clone the repo
- - mvn clean install
+ - ```mvn clean install```
  - ```java -jar ./target/neowritesogm-1.0-SNAPSHOT.jar -n 10000```
