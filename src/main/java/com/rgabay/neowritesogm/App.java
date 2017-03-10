@@ -30,7 +30,7 @@ public class App {
         int nodesNum = (jcommanderSetup.getNodesNum() == null) ?  DEFAULT_NODES_NUM : jcommanderSetup.getNodesNum();
         List<OgmTestNode> nodes =  Stream.generate(OgmTestNode::new).limit(nodesNum).collect(Collectors.toList());
 
-        log.info("nodes to write: " + nodesNum);
+        log.info("nodes to write: {} ", nodesNum);
 
         SessionFactory sessionFactory = new SessionFactory(DOMAIN_PACKAGE);
         Session session = sessionFactory.openSession();
