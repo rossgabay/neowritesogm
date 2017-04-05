@@ -3,20 +3,16 @@ package com.rgabay.neowritesogm.domain;
 import lombok.Data;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
-import org.neo4j.ogm.annotation.Relationship;
 
-import java.util.Set;
-
+/**
+ * Created by rossgabay on 4/3/17.
+ */
 @NodeEntity
 @Data
-public class OgmTestNode {
+public class OgmTestRelated {
 
     @GraphId
     private Long id;
 
-    @Relationship(type = "RELATED_TO") // check  neo4j label
-    Set<OgmTestRelated> relateds;
-
     private String name;
-    private String new_prop;
 }
