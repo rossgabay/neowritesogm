@@ -19,4 +19,5 @@ public class OgmTestNode {
 
     private String name;
     private String new_prop;
+    private Integer customId;
 }

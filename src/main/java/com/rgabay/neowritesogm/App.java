@@ -24,6 +24,7 @@ public class App {
     private static final String DOMAIN_PACKAGE = "com.rgabay.neowritesogm.domain";
     private static final int DEFAULT_NODES_NUM = 1000;
 
+
     public static void main(String[] args) {
 
         JCommanderSetup jcommanderSetup = new JCommanderSetup();
@@ -36,6 +37,7 @@ public class App {
         log.info("nodes to write: {} ", nodesNum);
 
         SessionFactory sessionFactory = new SessionFactory(DOMAIN_PACKAGE);
+        sessionFactory.register(new com.rgabay.neowritesogm.listeners.AddUuidPreSaveEventListener());
         Session session = sessionFactory.openSession();
 
         Transaction tx = session.beginTransaction();
