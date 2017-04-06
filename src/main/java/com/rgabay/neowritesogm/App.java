@@ -45,7 +45,7 @@ public class App {
         DateTime dtStart = new DateTime();
         log.info("Start Time : {}",  dtStart.toString());
 
-     //   nodes.parallelStream().forEach(session::save);
+        nodes.parallelStream().forEach(session::save);
 
         DateTime dtEnd = new DateTime();
         log.info("End Time : {}", dtEnd);
