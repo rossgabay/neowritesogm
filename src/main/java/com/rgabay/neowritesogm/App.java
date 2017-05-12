@@ -1,57 +1,30 @@
 package com.rgabay.neowritesogm;
 
 
-import com.beust.jcommander.JCommander;
 import com.rgabay.neowritesogm.domain.OgmTestNode;
 import com.rgabay.neowritesogm.domain.OgmTestRelated;
-import com.rgabay.neowritesogm.util.JCommanderSetup;
+
+import com.rgabay.neowritesogm.domain.RoleType;
 import lombok.extern.slf4j.Slf4j;
 import org.neo4j.ogm.model.Result;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.joda.time.DateTime;
-import org.joda.time.Period;
 import org.neo4j.ogm.transaction.Transaction;
 
 @Slf4j
 public class App {
 
     private static final String DOMAIN_PACKAGE = "com.rgabay.neowritesogm.domain";
-    private static final int DEFAULT_NODES_NUM = 1000;
-
 
     public static void main(String[] args) {
 
-        JCommanderSetup jcommanderSetup = new JCommanderSetup();
-
-        new JCommander(jcommanderSetup, args);
-
-        int nodesNum = (jcommanderSetup.getNodesNum() == null) ?  DEFAULT_NODES_NUM : jcommanderSetup.getNodesNum();
-        List<OgmTestNode> nodes =  Stream.generate(OgmTestNode::new).limit(nodesNum).collect(Collectors.toList());
-
-        log.info("nodes to write: {} ", nodesNum);
 
         SessionFactory sessionFactory = new SessionFactory(DOMAIN_PACKAGE);
-        sessionFactory.register(new com.rgabay.neowritesogm.listeners.AddUuidPreSaveEventListener());
         Session session = sessionFactory.openSession();
 
         Transaction tx = session.beginTransaction();
-
-        DateTime dtStart = new DateTime();
-        log.info("Start Time : {}",  dtStart.toString());
-
-        nodes.parallelStream().forEach(session::save);
-
-        DateTime dtEnd = new DateTime();
-        log.info("End Time : {}", dtEnd);
-        log.info("Duration : {}", new Period(dtStart, dtEnd));
-
-        //now let's "manually" create/save some OgmTestNode nodes with related_to OgmTestRelated nodes
 
         OgmTestNode ogmTestNode = new OgmTestNode();
         ogmTestNode.setName("test_node_1");
@@ -64,6 +37,7 @@ public class App {
 
         ogmTestNode.setRelateds(relateds);
 
+        ogmTestNode.setRoles(Arrays.asList(RoleType.DEVELOPER, RoleType.ARCHITECT));
         tx.commit();
         session.save(ogmTestNode);
         tx.close();
@@ -85,30 +59,26 @@ public class App {
         session.save(ogmTestNode2);
         tx.close();
 
-        // Cypher update
+        session.clear();
+
         tx = session.beginTransaction();
-        Result r1 = session.query("match (n{name:\"test_node_1\"}) set n.new_prop=\"new data\" return n", Collections.EMPTY_MAP);
-        tx.commit();
-        tx.close();
-
-        // NOTE: this is important here since it "flushes" the data
-        //session.clear();
-
         //now lets read some of the data with cypher
         log.info("let's read some nodes back");
-        //Result r =  session.query("match (n) return n limit 10", Collections.EMPTY_MAP);
 
-        // the result totally depends on whether session.clear() was called or not.
-        // if it was - relateds aren't loaded because the query
-        // itself doesn't load them, it it wasn't - then they get retrieved from cache
-        // ... and since we're doing a manual cypher update above those updates are only picked up if clear() was called
-        System.out.println("Cypher load...");
-        Result r =  session.query("match (n{name:\"test_node_1\"}) return n ", Collections.EMPTY_MAP);
+        String query1 = "match (n{name:\"test_node_1\"})-[r:RELATED_TO]-(rt) return n,r,rt ";
+        System.out.println("Cypher load #1 - looking for OgmTestNode with populated List of Enums. ...");
+        Iterable<OgmTestNode> r =  session.query(OgmTestNode.class, query1, Collections.EMPTY_MAP);
         r.forEach(System.out::println);
 
+        String query2 = "match (n{name:\"test_name_2\"})-[r:RELATED_TO]-(rt) return n,r,rt ";
+        System.out.println("Cypher load #2 - looking for OgmTestNode with empty List of Enums...");
+        Iterable<OgmTestNode> r2 =  session.query(OgmTestNode.class, query2, Collections.EMPTY_MAP);
+        r2.forEach(System.out::println);
+
         System.out.println("loadAll...");
-       Collection<OgmTestNode> c = session.loadAll(OgmTestNode.class);
-       c.forEach(System.out::println);
-       //c.stream().map(z -> z.getRelateds()).forEach(System.out::println);
+        Collection<OgmTestNode> c = session.loadAll(OgmTestNode.class);
+        c.forEach(System.out::println);
+
+        tx.close();
     }
 }
